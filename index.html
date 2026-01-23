@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Penguin Slide - 第21弾</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #e3f2fd; font-family: sans-serif; touch-action: none; }
+        
+        /* 広告エリア：150px */
+        #ad-top, #ad-bottom { 
+            position: fixed; left: 0; width: 100%; height: 150px; 
+            background: #333; z-index: 100; display: flex; align-items: center; justify-content: center; 
+        }
+        #ad-top { top: 0; }
+        #ad-bottom { bottom: 0; }
+        iframe { border: none; width: 100%; height: 150px; }
+
+        canvas { display: block; margin-top: 150px; background: #ffffff; }
+        
+        #ui { position: absolute; top: 160px; left: 0; width: 100%; text-align: center; color: #0277bd; font-size: 26px; font-weight: bold; pointer-events: none; text-shadow: 1px 1px 2px white; z-index: 10; }
+        
+        #startScreen { 
+            position: absolute; top: 150px; left: 0; width: 100%; height: calc(100vh - 300px); 
+            background: rgba(255,255,255,0.9); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 50;
+        }
+        #goButton { padding: 15px 45px; font-size: 24px; background: #0288d1; border: none; border-radius: 50px; color: white; font-weight: bold; cursor: pointer; box-shadow: 0 4px #01579b; }
+    </style>
+</head>
+<body>
+
+    <div id="ad-top"><iframe id="frame-top" src="ad.html"></iframe></div>
+    <div id="ad-bottom"><iframe id="frame-bottom" src="ad.html"></iframe></div>
+
+    <div id="startScreen">
+        <h1 style="color:#0288d1; margin-bottom:10px;">Penguin Slide</h1>
+        <p style="margin-bottom: 25px; text-align: center;">ペンギンをスライドして魚をゲット！<br>シロクマさんは避けよう！</p>
+        <button id="goButton">スタート！</button>
+        <p style="margin-top:15px; font-weight:bold; color:#0288d1;">BEST: <span id="best-ui">0</span></p>
+    </div>
+
+    <div id="ui">FISH: 0</div>
+    <canvas id="gameCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        const ui = document.getElementById("ui");
+        const startScreen = document.getElementById("startScreen");
+        const bestUi = document.getElementById("best-ui");
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight - 300;
+
+        let score = 0;
+        let bestScore = localStorage.getItem("penguin_slide_best") || 0;
+        let gameActive = false;
+        let player = { x: canvas.width / 2, targetX: canvas.width / 2, y: canvas.height - 80, size: 50 };
+        let items = [];
+        bestUi.innerText = bestScore;
+
+        document.getElementById("goButton").onclick = () => {
+            startScreen.style.display = "none";
+            gameActive = true; score = 0; items = [];
+            spawnItem(); update();
+        };
+
+        window.addEventListener("touchmove", (e) => { 
+            if(!gameActive) return;
+            player.targetX = e.touches[0].clientX;
+            e.preventDefault();
+        }, {passive: false});
+
+        window.addEventListener("mousemove", (e) => {
+            if(!gameActive) return;
+            player.targetX = e.clientX;
+        });
+
+        function spawnItem() {
+            if(!gameActive) return;
+            const isBear = Math.random() < 0.3;
+            items.push({
+                x: Math.random() * (canvas.width - 40) + 20,
+                y: -50,
+                emoji: isBear ? "🐻‍❄️" : "🐟",
+                type: isBear ? "bear" : "fish",
+                speed: 4 + (score / 15)
+            });
+            setTimeout(spawnItem, Math.max(300, 800 - (score * 5)));
+        }
+
+        function update() {
+            if(!gameActive) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // ペンギンの移動（少し遅れてついてくる慣性演出）
+            player.x += (player.targetX - player.x) * 0.15;
+
+            // ペンギン描画
+            ctx.font = "60px Arial";
+            ctx.textAlign = "center";
+            ctx.fillText("🐧", player.x, player.y);
+
+            for(let i = items.length - 1; i >= 0; i--) {
+                let it = items[i];
+                it.y += it.speed;
+                ctx.font = "40px Arial";
+                ctx.fillText(it.emoji, it.x, it.y);
+
+                // 当たり判定
+                let dx = player.x - it.x;
+                let dy = player.y - it.y;
+                let dist = Math.sqrt(dx * dx + dy * dy);
+
+                if(dist < 40) {
+                    if(it.type === "fish") {
+                        score++;
+                        ui.innerText = "FISH: " + score;
+                        items.splice(i, 1);
+                    } else {
+                        gameOver(); return;
+                    }
+                } else if(it.y > canvas.height + 50) {
+                    items.splice(i, 1);
+                }
+            }
+            requestAnimationFrame(update);
+        }
+
+        function gameOver() {
+            gameActive = false;
+            if(score > bestScore) {
+                bestScore = score;
+                localStorage.setItem("penguin_slide_best", bestScore);
+            }
+            alert("シロクマさんにぶつかった！\nとれた魚: " + score);
+            location.reload();
+        }
+
+        setInterval(() => {
+            ["frame-top", "frame-bottom"].forEach(id => {
+                const f = document.getElementById(id);
+                if(f) { const s = f.src; f.src = "about:blank"; setTimeout(() => f.src = s, 100); }
+            });
+        }, 29000);
+    </script>
+</body>
+</html>
