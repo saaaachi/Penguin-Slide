@@ -3,136 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Penguin Slide - 第21弾</title>
+    <title>Penguin Slide - 氷の上の魚獲り</title>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1299640300068792" crossorigin="anonymous"></script>
     <style>
-        * { box-sizing: border-box; }
-        body { margin: 0; overflow: hidden; background: #e3f2fd; font-family: sans-serif; touch-action: none; position: fixed; width: 100%; height: 100%; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; position: fixed; touch-action: none; }
+        body { background: #e3f2fd; font-family: 'Hiragino Sans', 'Meiryo', sans-serif; display: flex; flex-direction: column; color: #333; }
         
-        /* 上下広告エリア（150px） */
-        #ad-top {
-            position: absolute; top: 0; left: 0; width: 100%; height: 150px;
-            background: #333; z-index: 1000;
-        }
-        #ad-bottom {
-            position: absolute; bottom: 0; left: 0; width: 100%; height: 60px;
-            background: #333; z-index: 1; /* PR広告の裏に潜る */
-        }
-        iframe { border: none; width: 100%; height: 100%; }
+        /* 上部広告：100px 固定 */
+        #ad-top { width: 100%; height: 100px; background: #333; display: flex; align-items: center; justify-content: center; flex-shrink: 0; z-index: 100; border-bottom: 2px solid #0288d1; }
 
         /* ゲームエリア */
-        #game-outer {
-            position: absolute; top: 150px; bottom: 60px; left: 0; right: 0;
-            background: #ffffff; overflow: hidden; z-index: 10;
-        }
+        #game-outer { flex-grow: 1; position: relative; width: 100%; background: linear-gradient(to bottom, #ffffff, #e3f2fd); overflow: hidden; }
         canvas { display: block; width: 100%; height: 100%; }
         
-        #ui { position: absolute; top: 10px; left: 0; width: 100%; text-align: center; color: #0277bd; font-size: 26px; font-weight: bold; pointer-events: none; text-shadow: 1px 1px 2px white; z-index: 20; }
-        
-        /* メニュー画面（上詰め配置） */
-        #startScreen { 
+        #ui { position: absolute; top: 15px; width: 100%; text-align: center; color: #0277bd; font-size: 28px; font-weight: bold; pointer-events: none; z-index: 10; text-shadow: 2px 2px 0 rgba(255,255,255,0.8); }
+
+        /* メニュー画面 */
+        #menuScreen { 
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(255,255,255,0.9); display: flex; flex-direction: column; align-items: center; justify-content: flex-start; z-index: 50;
-            padding-top: 10px;
+            background: rgba(255,255,255,0.96); display: flex; flex-direction: column; 
+            align-items: center; justify-content: center; z-index: 500; padding: 20px;
         }
 
-        #menuHeader { text-align: center; margin-bottom: 5px; }
-        #menuTitle { color: #0288d1; margin: 0; font-size: 24px; }
-        #best-info { font-weight: bold; color: #0288d1; font-size: 16px; margin: 0; }
+        /* 収益の柱：レクタングル広告 */
+        #ad-middle-box {
+            width: 300px; height: 250px; background: #eee;
+            margin: 15px 0; display: none; justify-content: center; align-items: center;
+            border: 1px solid #ccc; border-radius: 10px; overflow: hidden;
+        }
+        
+        .btn-group { display: flex; flex-direction: column; align-items: center; width: 100%; gap: 12px; }
+        .menu-btn { width: 280px; padding: 18px; font-size: 20px; border: none; border-radius: 50px; font-weight: bold; cursor: pointer; text-decoration: none; text-align: center; transition: 0.2s; }
+        #goButton { background: #0288d1; color: white; box-shadow: 0 5px #01579b; }
+        #goButton:disabled { background: #bbb; box-shadow: none; color: #777; }
+        .sub-btn { background: #9b59b6; color: white; box-shadow: 0 5px #8e44ad; font-size: 16px; }
 
-        /* 中央広告（スリム枠160px） */
-        #ad-middle-container {
-            width: 300px; height: 160px; background: #000;
-            margin: 5px 0; display: none;
-            justify-content: center; align-items: center;
-            overflow: hidden; flex-shrink: 0;
-        }
-
-        /* ボタン群 */
-        .btn-group {
-            display: flex; flex-direction: column; align-items: center;
-            width: 100%; gap: 6px;
-        }
-        #goButton { 
-            padding: 12px 0; font-size: 20px; background: #0288d1; border: none; 
-            border-radius: 50px; color: white; font-weight: bold; cursor: pointer; 
-            width: 240px; box-shadow: 0 4px #01579b; 
-        }
-        .link-btn {
-            padding: 10px 0; font-size: 14px; background: #9b59b6;
-            border: none; border-radius: 50px; color: white; font-weight: bold;
-            text-decoration: none; width: 240px; text-align: center;
-            box-shadow: 0 4px #8e44ad;
-        }
+        /* インタースティシャル */
+        #inter-screen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.98); z-index: 99999; align-items: center; justify-content: center; }
+        .inter-content { width: 330px; height: 350px; background: #fff; position: relative; border-radius: 15px; }
+        #close-ad-btn { position: absolute; top: -55px; right: 0; width: 45px; height: 45px; background: #333; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; border: 2px solid #fff; cursor: pointer; }
     </style>
 </head>
-<body>
+<body oncontextmenu="return false;">
 
-    <div id="ad-top"><iframe id="frame-top" src="ad.html"></iframe></div>
+    <div id="ad-top">
+        <ins class="adsbygoogle" style="display:inline-block;width:320px;height:100px" data-ad-client="ca-pub-1299640300068792" data-ad-slot="3972022911"></ins>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    </div>
 
     <div id="game-outer">
         <div id="ui">FISH: 0</div>
-        <canvas id="gameCanvas"></canvas>
-
-        <div id="startScreen">
-            <div id="menuHeader">
-                <h1 id="menuTitle">Penguin Slide</h1>
-                <p id="gameDesc" style="margin: 5px 0; font-size: 14px; text-align: center;">ペンギンをスライドして魚をゲット！</p>
-                <p id="best-info">BEST: <span id="best-ui">0</span></p>
+        
+        <div id="menuScreen">
+            <div style="text-align:center;">
+                <h1 id="menuTitle" style="color:#0288d1; margin:0; font-size: 32px;">Penguin Slide</h1>
+                <p id="menuMsg" style="margin:5px 0; color: #666;">白クマを避けて魚を捕まえよう！</p>
+                <div style="color: #0288d1; font-size: 20px; font-weight: bold; margin: 5px 0;">BEST SCORE: <span id="best-ui">0</span></div>
             </div>
 
-            <div id="ad-middle-container">
-                <script src="https://adm.shinobi.jp/s/1e6de436ea850948e238e975a93767eb"></script>
+            <div id="ad-middle-box">
+                <ins class="adsbygoogle" style="display:inline-block;width:300px;height:250px" data-ad-client="ca-pub-1299640300068792" data-ad-slot="9050127185"></ins>
+                <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
             </div>
 
             <div class="btn-group">
-                <button id="goButton">スタート！</button>
-                <a href="https://saaaachi.github.io/Hungry-Animal/" class="link-btn">他のゲームはこちら</a>
+                <button id="goButton" class="menu-btn" onclick="startGame()">スタート！</button>
+                <a href="https://saaaachi.github.io/" class="sub-btn menu-btn">他の脳トレで遊ぶ</a>
+            </div>
+        </div>
+        
+        <canvas id="gameCanvas"></canvas>
+
+        <div id="inter-screen">
+            <div class="inter-content">
+                <div id="close-ad-btn" onclick="closeInterAd()">5</div>
+                <iframe id="ifr-inter" src="about:blank" style="width:100%; height:100%; border:none; border-radius:15px; background:#fff;"></iframe>
             </div>
         </div>
     </div>
 
-    <div id="ad-bottom"><iframe id="frame-bottom" src="ad.html"></iframe></div>
-
     <script>
-        const canvas = document.getElementById("gameCanvas");
-        const ctx = canvas.getContext("2d");
-        const ui = document.getElementById("ui");
-        const startScreen = document.getElementById("startScreen");
-        const menuTitle = document.getElementById("menuTitle");
-        const gameDesc = document.getElementById("gameDesc");
-        const adMid = document.getElementById("ad-middle-container");
-        const goButton = document.getElementById("goButton");
-        const bestUi = document.getElementById("best-ui");
-        const gameOuter = document.getElementById("game-outer");
+        const canvas = document.getElementById("gameCanvas"), ctx = canvas.getContext("2d"),
+              ui = document.getElementById("ui"), menuScreen = document.getElementById("menuScreen"),
+              menuTitle = document.getElementById("menuTitle"), menuMsg = document.getElementById("menuMsg"),
+              bestUi = document.getElementById("best-ui"), goButton = document.getElementById("goButton"),
+              adMid = document.getElementById("ad-middle-box"), gameOuter = document.getElementById("game-outer");
+
+        let score = 0, bestScore = localStorage.getItem("penguin_slide_best") || 0, playCount = 0;
+        let gameActive = false, player, items = [], spawnTimer;
 
         function resize() {
             canvas.width = gameOuter.clientWidth;
             canvas.height = gameOuter.clientHeight;
+            player = { x: canvas.width / 2, targetX: canvas.width / 2, y: canvas.height - 85, size: 60 };
         }
-        window.addEventListener('resize', resize);
-        resize();
+        window.onload = () => { resize(); bestUi.innerText = bestScore; adMid.style.display = "none"; };
+        window.onresize = resize;
 
-        let score = 0;
-        let bestScore = localStorage.getItem("penguin_slide_best") || 0;
-        let gameActive = false;
-        let player = { x: 0, targetX: 0, y: 0, size: 50 };
-        let items = [];
-        let spawnTimer;
-
-        bestUi.innerText = bestScore;
-
-        goButton.onclick = () => {
-            startScreen.style.display = "none";
+        function startGame() {
+            menuScreen.style.display = "none";
+            adMid.style.display = "none";
             gameActive = true;
             score = 0;
             items = [];
             ui.innerText = "FISH: 0";
-            player.x = canvas.width / 2;
-            player.targetX = canvas.width / 2;
-            player.y = canvas.height - 80;
+            resize();
             spawnItem();
             update();
-        };
+        }
 
         function handleMove(e) {
             if(!gameActive) return;
@@ -140,30 +119,41 @@
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             player.targetX = clientX - rect.left;
         }
-
         window.addEventListener("touchmove", (e) => { handleMove(e); e.preventDefault(); }, {passive: false});
         window.addEventListener("mousemove", handleMove);
 
         function spawnItem() {
             if(!gameActive) return;
-            const isBear = Math.random() < 0.3;
+            const isBear = Math.random() < 0.25; 
             items.push({
-                x: Math.random() * (canvas.width - 40) + 20,
+                x: Math.random() * (canvas.width - 60) + 30,
                 y: -50,
                 emoji: isBear ? "🐻‍❄️" : "🐟",
                 type: isBear ? "bear" : "fish",
-                speed: 4 + (score / 15)
+                speed: 4 + (score / 12)
             });
-            spawnTimer = setTimeout(spawnItem, Math.max(300, 800 - (score * 5)));
+            spawnTimer = setTimeout(spawnItem, Math.max(300, 850 - (score * 5)));
         }
 
         function update() {
             if(!gameActive) return;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+            // 氷の質感を出すためのライン
+            ctx.strokeStyle = "rgba(255,255,255,0.5)";
+            ctx.lineWidth = 3;
+            for(let i=0; i<3; i++) {
+                ctx.beginPath();
+                ctx.moveTo(0, canvas.height * (0.3 + i*0.2));
+                ctx.lineTo(canvas.width, canvas.height * (0.3 + i*0.2) - 20);
+                ctx.stroke();
+            }
+
+            // ペンギンの移動（慣性）
             player.x += (player.targetX - player.x) * 0.15;
 
-            ctx.font = "60px Arial";
+            // ペンギン描画
+            ctx.font = "65px Arial";
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
             ctx.fillText("🐧", player.x, player.y);
@@ -171,14 +161,14 @@
             for(let i = items.length - 1; i >= 0; i--) {
                 let it = items[i];
                 it.y += it.speed;
-                ctx.font = "40px Arial";
+                ctx.font = "45px Arial";
                 ctx.fillText(it.emoji, it.x, it.y);
 
                 let dx = player.x - it.x;
                 let dy = player.y - it.y;
                 let dist = Math.sqrt(dx * dx + dy * dy);
 
-                if(dist < 40) {
+                if(dist < 45) {
                     if(it.type === "fish") {
                         score++;
                         ui.innerText = "FISH: " + score;
@@ -187,7 +177,7 @@
                         gameOver();
                         return;
                     }
-                } else if(it.y > canvas.height + 50) {
+                } else if(it.y > canvas.height + 60) {
                     items.splice(i, 1);
                 }
             }
@@ -197,30 +187,55 @@
         function gameOver() {
             gameActive = false;
             clearTimeout(spawnTimer);
+            playCount++;
+
             if(score > bestScore) {
                 bestScore = score;
                 localStorage.setItem("penguin_slide_best", bestScore);
                 bestUi.innerText = bestScore;
             }
-            
-            menuTitle.innerText = "GAME OVER";
+
+            menuTitle.innerText = "ぶつかった！❄️";
             menuTitle.style.color = "#d32f2f";
-            gameDesc.style.display = "none"; 
-            goButton.innerText = "もう一度！";
-            
+            menuMsg.innerText = "つかまえた魚: " + score;
+            goButton.innerText = "お待ちください...";
+            goButton.disabled = true;
+
             adMid.style.display = "flex"; 
-            startScreen.style.display = "flex";
+            menuScreen.style.display = "flex";
+
+            setTimeout(() => {
+                goButton.disabled = false;
+                goButton.innerText = "もう一度！";
+            }, 1500);
+
+            if(playCount % 3 === 0) setTimeout(showInterAd, 600);
         }
 
-        setInterval(() => {
-            ["frame-top", "frame-bottom"].forEach(id => {
-                const f = document.getElementById(id);
-                if(f) {
-                    const s = f.src; f.src = "about:blank";
-                    setTimeout(() => f.src = s, 100);
+        function showInterAd() {
+            const screen = document.getElementById("inter-screen"), 
+                  closeBtn = document.getElementById("close-ad-btn"), 
+                  ifr = document.getElementById('ifr-inter');
+            ifr.src = './ad.large.html?v=' + Date.now();
+            screen.style.display = "flex";
+            let count = 5;
+            closeBtn.innerText = count;
+            closeBtn.style.pointerEvents = "none";
+            const itv = setInterval(() => {
+                count--;
+                if(count > 0) closeBtn.innerText = count;
+                else {
+                    clearInterval(itv);
+                    closeBtn.innerText = "×";
+                    closeBtn.style.pointerEvents = "auto";
                 }
-            });
-        }, 29000);
+            }, 1000);
+        }
+
+        function closeInterAd() {
+            document.getElementById("inter-screen").style.display = "none";
+            document.getElementById('ifr-inter').src = 'about:blank';
+        }
     </script>
 </body>
 </html>
